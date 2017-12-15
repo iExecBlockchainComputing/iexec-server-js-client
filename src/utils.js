@@ -2,7 +2,7 @@ const Debug = require('debug');
 
 const debug = Debug('iexec-server-js-client:utils');
 
-const getApplicationBinaryFieldName = (_os, _cpu) => {
+const getAppBinaryFieldName = (_os, _cpu) => {
   if ((_os === undefined) || (_cpu === undefined)) {
     throw new Error('OS or CPU undefined');
   }
@@ -78,6 +78,6 @@ const waitFor = async (fn, uid, counter = 0) => {
 };
 
 module.exports = {
-  getApplicationBinaryFieldName,
+  getAppBinaryFieldName,
   waitFor,
 };
