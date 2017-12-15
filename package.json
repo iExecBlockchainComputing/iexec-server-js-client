@@ -1,0 +1,36 @@
+{
+  "name": "iexec-server-js-client",
+  "version": "1.0.0",
+  "description": "JS client to interact with iExec REST API",
+  "main": "dist/iexec-server-js-client.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iExecBlockchainComputing/iexec-server-js-client.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iExecBlockchainComputing/iexec-server-js-client/issues"
+  },
+  "homepage": "https://github.com/iExecBlockchainComputing/iexec-server-js-client#readme",
+  "devDependencies": {
+    "eslint": "^4.13.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "jest": "^21.2.1"
+  },
+  "dependencies": {
+    "debug": "^3.1.0",
+    "form-data": "^2.3.1",
+    "hash.js": "^1.1.3",
+    "json2xml": "^0.1.3",
+    "node-fetch": "^1.7.3",
+    "qs": "^6.5.1",
+    "request-promise": "^4.2.2",
+    "uuid": "^3.1.0",
+    "xml2js-es6-promise": "^1.1.1"
+  }
+}
