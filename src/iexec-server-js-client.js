@@ -7,12 +7,12 @@ const fetch = require('node-fetch');
 const qs = require('qs');
 const hash = require('hash.js');
 const request = require('request-promise');
-const { getApplicationBinaryFieldName } = require('./utils');
+const { getApplicationBinaryFieldName, waitFor } = require('./utils');
 
 const debug = Debug('xwhep-js-client');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const createXWHEPClient = ({
+const createIEXECClient = ({
   login = '',
   password = '',
   hostname = '',
@@ -107,6 +107,7 @@ const createXWHEPClient = ({
     const appUID = uuidV4();
     debug('appUID', appUID);
     await sendApp(createApp(appUID, name, fields));
+    return appUID;
   };
 
   const submitWork = async (appuid, sgid) => {
@@ -117,7 +118,10 @@ const createXWHEPClient = ({
     const work = await getUID(workUID);
     work.xwhep.work[0].status = 'PENDING';
     await sendWork(json2xml(work));
+    return workUID;
   };
+
+  const waitForWorkCompleted = async uid => waitFor(getUID, uid);
 
   const init = async () => {
     if (jwt) await getCookieByJWT(jwt);
@@ -143,6 +147,7 @@ const createXWHEPClient = ({
     createWork,
     registerApp,
     submitWork,
+    waitForWorkCompleted,
   };
 };
-module.exports = createXWHEPClient;
+module.exports = createIEXECClient;
