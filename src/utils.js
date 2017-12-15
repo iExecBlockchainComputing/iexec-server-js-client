@@ -1,3 +1,7 @@
+const Debug = require('debug');
+
+const debug = Debug('iexec-server-js-client:utils');
+
 const getApplicationBinaryFieldName = (_os, _cpu) => {
   if ((_os === undefined) || (_cpu === undefined)) {
     throw new Error('OS or CPU undefined');
@@ -57,6 +61,23 @@ const getApplicationBinaryFieldName = (_os, _cpu) => {
   return undefined;
 };
 
+const FETCH_INTERVAL = 5000;
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+const waitFor = async (fn, uid, counter = 0) => {
+  try {
+    const work = await fn(uid);
+    debug('waitFor()', counter, uid, 'status', work.xwhep.work[0].status[0]);
+    if (work.xwhep.work[0].status[0] === 'COMPLETED') return work;
+    await sleep(FETCH_INTERVAL);
+    return waitFor(fn, uid, counter + 1);
+  } catch (error) {
+    debug('waitFor()', uid, error);
+    throw error;
+  }
+};
+
 module.exports = {
   getApplicationBinaryFieldName,
+  waitFor,
 };
