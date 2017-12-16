@@ -7,7 +7,11 @@ const fetch = require('node-fetch');
 const qs = require('qs');
 const hash = require('hash.js');
 const request = require('request-promise');
-const { getAppBinaryFieldName, waitFor } = require('./utils');
+const devnull = require('dev-null');
+const through2 = require('through2');
+const {
+  getAppBinaryFieldName, waitFor, uri2uid, uid2uri,
+} = require('./utils');
 
 const debug = Debug('iexec-server-js-client');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -26,7 +30,18 @@ const createIEXECClient = ({
   let mandatedLogin = mandated;
   const APPS = {};
 
-  const http = method => async (endpoint, { uid = '', params = {}, body = {} } = {}) => {
+  const xmlFormat = async (res) => {
+    const xmlResponse = await res.text();
+    debug('xmlResponse', xmlResponse);
+    const jsResponse = await xml2js(xmlResponse);
+    debug('jsResponse', jsResponse);
+    return jsResponse;
+  };
+  const streamFormat = res => res;
+
+  const http = method => async (endpoint, {
+    uid = '', params = {}, body = {}, format = xmlFormat,
+  } = {}) => {
     try {
       const MANDATED = mandatedLogin !== '' ? { XWMANDATINGLOGIN: mandatedLogin } : {};
       const allParams = Object.assign({}, params, STATE_AUTH, MANDATED);
@@ -35,16 +50,12 @@ const createIEXECClient = ({
       const headers = { Authorization: 'Basic '.concat(BASICAUTH_CREDENTIALS) };
 
       debug(method, uri);
-      const xmlResponse = await fetch(uri, {
+      const res = await fetch(uri, {
         method,
         body,
         headers,
-      }).then(res => res.text());
-      debug(method, 'xmlResponse', xmlResponse);
-      const jsResponse = await xml2js(xmlResponse);
-      debug(method, 'jsResponse', jsResponse);
-
-      return jsResponse;
+      });
+      return format(res);
     } catch (error) {
       debug('http', error);
       throw error;
@@ -82,7 +93,7 @@ const createIEXECClient = ({
   const sendData = xmlData => get('senddata', { params: { XMLDESC: xmlData } });
   const sendApp = xmlApp => get('sendapp', { params: { XMLDESC: xmlApp } });
   const sendWork = xmlWork => get('sendwork', { params: { XMLDESC: xmlWork } });
-  const download = uid => get('download', { uid });
+  const download = uid => get('downloaddata', { uid });
   const uploadData = (uid, data, size) => {
     const form = new FormData();
     form.append('DATAUID', uid);
@@ -104,7 +115,7 @@ const createIEXECClient = ({
     await sendData(createData(dataUID, type, cpu, os));
     await uploadData(dataUID, data, size);
     const fields = {};
-    fields[getAppBinaryFieldName(os, cpu)] = 'xw://xwserver/'.concat(dataUID);
+    fields[getAppBinaryFieldName(os, cpu)] = uid2uri(dataUID);
     const appUID = uuidV4();
     debug('appUID', appUID);
     await sendApp(createApp(appUID, name, fields));
@@ -148,6 +159,36 @@ const createIEXECClient = ({
     return submitWork(appUID, sgid);
   };
 
+  const downloadStream = (uid, stream = '') => new Promise(async (resolve, reject) => {
+    const res = await get('downloaddata', { uid, format: streamFormat });
+
+    let buff = Buffer.from('', 'utf8');
+    let full = false;
+    const bufferSize = 1 * 1024;
+    const outputStream = stream === '' ? devnull() : stream;
+
+    res.body
+      .pipe(through2((chunk, enc, cb) => {
+        if (!full) {
+          buff = Buffer.concat([buff, chunk]);
+          if (buff.length >= bufferSize) {
+            debug('Buffer limit reached', buff.length);
+            full = true;
+          }
+        }
+        cb(null, chunk);
+      }))
+      .on('error', reject)
+      .pipe(outputStream)
+      .on('error', reject)
+      .on('finish', () => {
+        debug('finish event');
+        debug('buff.length', buff.length);
+        debug('buff.slice(0, bufferSize).length', buff.slice(0, bufferSize).length);
+        resolve({ stdout: buff.slice(0, bufferSize).toString() });
+      });
+  });
+
   const init = async () => {
     if (jwt) await getCookieByJWT(jwt);
     await updateAppsCache();
@@ -170,6 +211,7 @@ const createIEXECClient = ({
     sendData,
     sendApp,
     download,
+    downloadStream,
     uploadData,
     createWork,
     registerApp,

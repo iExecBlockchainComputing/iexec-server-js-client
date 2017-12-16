@@ -77,7 +77,12 @@ const waitFor = async (fn, uid, counter = 0) => {
   }
 };
 
+const uri2uid = uri => uri.split('xw://xwserver/')[1];
+const uid2uri = uid => `xw://xwserver/${uid}`;
+
 module.exports = {
   getAppBinaryFieldName,
   waitFor,
+  uri2uid,
+  uid2uri,
 };
