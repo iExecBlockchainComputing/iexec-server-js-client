@@ -9,9 +9,7 @@ const hash = require('hash.js');
 const request = require('request-promise');
 const devnull = require('dev-null');
 const through2 = require('through2');
-const {
-  getAppBinaryFieldName, waitFor, uri2uid, uid2uri,
-} = require('./utils');
+const { getAppBinaryFieldName, waitFor, uid2uri } = require('./utils');
 
 const debug = Debug('iexec-server-js-client');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -107,7 +105,7 @@ const createIEXECClient = ({
 
   const createApp = (uid, name, extraFields = {}) => `<app><uid>${uid}</uid><name>${name}</name><type>DEPLOYABLE</type><accessrights>0x755</accessrights>${json2xml(extraFields)}</app>`;
   const createData = (uid, type, cpu, os) => `<data><uid>${uid}</uid><accessrights>0x755</accessrights><type>${type}</type><name>fileName</name><cpu>${cpu}</cpu><os>${os}</os><status>UNAVAILABLE</status></data>`;
-  const createWork = (uid, appuid, sgid) => `<work><uid>${uid}</uid><accessrights>0x755</accessrights><appuid>${appuid}</appuid><sgid>${sgid}</sgid><status>UNAVAILABLE</status></work>`;
+  const createWork = (uid, appuid, sgid, extraFields = {}) => `<work><uid>${uid}</uid><accessrights>0x755</accessrights><appuid>${appuid}</appuid><sgid>${sgid}</sgid><status>UNAVAILABLE</status>${json2xml(extraFields)}</work>`;
 
   const registerApp = async (data, type, cpu, os, size, name) => {
     const dataUID = uuidV4();
@@ -122,11 +120,11 @@ const createIEXECClient = ({
     return appUID;
   };
 
-  const submitWork = async (appUID, sgid) => {
+  const submitWork = async (appUID, { sgid = '', params = {} } = {}) => {
     const workUID = uuidV4();
     debug('workUID', workUID);
-    await sendWork(createWork(workUID, appUID, sgid));
-    await sendWork(createWork(workUID, appUID, sgid));
+    await sendWork(createWork(workUID, appUID, sgid, params));
+    await sendWork(createWork(workUID, appUID, sgid, params));
     const work = await getUID(workUID);
     debug('work.xwhep.work[0].status[0]', work.xwhep.work[0].status[0]);
     work.xwhep.work[0].status[0] = 'PENDING';
@@ -151,12 +149,12 @@ const createIEXECClient = ({
     appsToCache(notCachedApps);
   };
 
-  const submitWorkByAppName = async (appName, sgid) => {
+  const submitWorkByAppName = async (appName, { sgid = '', params = {} } = {}) => {
     if (!(appName in APPS)) await updateAppsCache();
     if (!(appName in APPS)) throw Error(`No match for App name ${appName}`);
     const appUID = APPS[appName];
     debug('appUID', appUID, 'from name', appName);
-    return submitWork(appUID, sgid);
+    return submitWork(appUID, { sgid, params });
   };
 
   const downloadStream = (uid, stream = '') => new Promise(async (resolve, reject) => {
