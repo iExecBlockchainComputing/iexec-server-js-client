@@ -3,7 +3,7 @@ pipeline:
     image: node:9.2.0
     commands:
       - npm install
-      - npm build
+      - npm run build
     when:
       event: tag
 
