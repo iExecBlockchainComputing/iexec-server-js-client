@@ -1,4 +1,9 @@
 pipeline:
+  build:
+    image: node:9.2.0
+    commands:
+      - npm install
+      - npm build
   npm:
     image: plugins/npm
     secrets: [ npm_password ]
