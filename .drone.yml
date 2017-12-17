@@ -4,6 +4,9 @@ pipeline:
     commands:
       - npm install
       - npm build
+    when:
+      event: tag
+
   npm:
     image: plugins/npm
     secrets: [ npm_password ]
