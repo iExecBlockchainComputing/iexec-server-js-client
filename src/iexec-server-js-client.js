@@ -75,7 +75,7 @@ const createIEXECClient = ({
       debug('cookie.value', cookie.value);
       return cookie.value;
     } catch (error) {
-      debug('error', error);
+      debug('getCookieByJWT()', error);
       throw Error;
     }
   };
@@ -102,28 +102,31 @@ const createIEXECClient = ({
     return post('uploaddata', { uid, body: form });
   };
 
-  const createApp = (uid, name, extraFields = {}) => `<app>${json2xml(extraFields)}<uid>${uid}</uid><name>${name}</name><type>DEPLOYABLE</type><accessrights>0x755</accessrights></app>`;
-  const createData = (uid, extraFields = {}) => `<data>${json2xml(extraFields)}<uid>${uid}</uid><accessrights>0x755</accessrights><name>fileName</name><status>UNAVAILABLE</status></data>`;
-  const createWork = (uid, appuid, sgid, extraFields = {}) => `<work>${json2xml(extraFields)}<uid>${uid}</uid><accessrights>0x755</accessrights><appuid>${appuid}</appuid><sgid>${sgid}</sgid><status>UNAVAILABLE</status></work>`;
+  const defaultApp = { accessrights: '0x1700', type: 'DEPLOYABLE' };
+  const defaultData = { accessrights: '0x1700', name: 'fileName', status: 'UNAVAILABLE' };
+  const defaultWork = { accessrights: '0x1700', status: 'UNAVAILABLE' };
+  const createXMLApp = app => `<app>${json2xml(Object.assign(defaultApp, app))}</app>`;
+  const createXMLData = data => `<data>${json2xml(Object.assign(defaultData, data))}</data>`;
+  const createXMLWork = work => `<work>${json2xml(Object.assign(defaultWork, work))}</work>`;
 
-  const registerApp = async (data, { size, name, params = {} }) => {
+  const registerApp = async (data, size, dataParams = {}, appParams = {}) => {
     const dataUID = uuidV4();
     debug('dataUID', dataUID);
-    await sendData(createData(dataUID, params));
+    await sendData(createXMLData(Object.assign(dataParams, { uid: dataUID })));
     await uploadData(dataUID, data, size);
     const fields = {};
-    fields[getAppBinaryFieldName(params.os, params.cpu)] = utils.uid2uri(dataUID);
+    fields[getAppBinaryFieldName(dataParams.os, dataParams.cpu)] = utils.uid2uri(dataUID);
     const appUID = uuidV4();
     debug('appUID', appUID);
-    await sendApp(createApp(appUID, name, fields));
+    await sendApp(createXMLApp(Object.assign(fields, { uid: appUID }, appParams)));
     return appUID;
   };
 
-  const submitWork = async (appUID, { sgid = '', params = {} } = {}) => {
+  const submitWork = async (appUID, params = {}) => {
     const workUID = uuidV4();
     debug('workUID', workUID);
-    await sendWork(createWork(workUID, appUID, sgid, params));
-    await sendWork(createWork(workUID, appUID, sgid, params));
+    await sendWork(createXMLWork(Object.assign(params, { uid: workUID, appuid: appUID })));
+    await sendWork(createXMLWork(Object.assign(params, { uid: workUID, appuid: appUID })));
     const work = await getUID(workUID);
     debug('work.xwhep.work[0].status[0]', work.xwhep.work[0].status[0]);
     work.xwhep.work[0].status[0] = 'PENDING';
@@ -148,12 +151,12 @@ const createIEXECClient = ({
     appsToCache(notCachedApps);
   };
 
-  const submitWorkByAppName = async (appName, { sgid = '', params = {} } = {}) => {
+  const submitWorkByAppName = async (appName, params = {}) => {
     if (!(appName in APPS)) await updateAppsCache();
     if (!(appName in APPS)) throw Error(`No match for App name ${appName}`);
     const appUID = APPS[appName];
     debug('appUID', appUID, 'from name', appName);
-    return submitWork(appUID, { sgid, params });
+    return submitWork(appUID, params);
   };
 
   const downloadStream = (uid, stream = '') => new Promise(async (resolve, reject) => {
@@ -210,7 +213,6 @@ const createIEXECClient = ({
     download,
     downloadStream,
     uploadData,
-    createWork,
     registerApp,
     submitWork,
     submitWorkByAppName,

@@ -3,32 +3,30 @@ const xml2js = require('xml2js-es6-promise');
 const createIEXECClient = require('../src/iexec-server-js-client');
 
 console.log = () => {};
-
-const iexec = createIEXECClient({
-  login: '',
-  password: '',
-  server: '',
-});
+const {
+  XW_LOGIN, XW_PWD, XW_SERVER, JWTOKEN,
+} = process.env;
+const login = '' || XW_LOGIN;
+const password = '' || XW_PWD;
+const server = '' || XW_SERVER;
+const jwtoken = '' || JWTOKEN;
+const iexec = createIEXECClient({ login, password, server });
 
 test('registerApp() & submitWorkByAppName()', async () => {
   expect.assertions(2);
   const data = fs.readFileSync('./test/Echo');
   const { size } = fs.statSync('./test/Echo');
-  const appUID = await iexec.registerApp(data, {
-    size,
+  const appUID = await iexec.registerApp(data, size, {
     name: 'Echo',
-    params: {
-      type: 'BINARY',
-      cpu: 'AMD64',
-      os: 'LINUX',
-    },
-  });
+    type: 'BINARY',
+    cpu: 'AMD64',
+    os: 'LINUX',
+  }, { name: 'Echo' });
   expect(appUID).toBeTruthy();
-  const workUID = await iexec.submitWorkByAppName('Echo');
+  const workUID = await iexec.submitWorkByAppName('Echo', { cmdline: 'Hello World' });
   expect(workUID).toBeTruthy();
 }, 15000);
 
-const jwtoken = '';
 test('getCookieByJWT()', async () => {
   expect.assertions(1);
   return expect(iexec.getCookieByJWT(jwtoken)).resolves.toBeTruthy();
