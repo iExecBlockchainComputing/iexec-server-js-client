@@ -14,7 +14,15 @@ test('registerApp() & submitWorkByAppName()', async () => {
   expect.assertions(2);
   const data = fs.readFileSync('./test/Echo');
   const { size } = fs.statSync('./test/Echo');
-  const appUID = await iexec.registerApp(data, 'binary', 'amd64', 'linux', size, 'Echo');
+  const appUID = await iexec.registerApp(data, {
+    size,
+    name: 'Echo',
+    params: {
+      type: 'BINARY',
+      cpu: 'AMD64',
+      os: 'LINUX',
+    },
+  });
   expect(appUID).toBeTruthy();
   const workUID = await iexec.submitWorkByAppName('Echo');
   expect(workUID).toBeTruthy();

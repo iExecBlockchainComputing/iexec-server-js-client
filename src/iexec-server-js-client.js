@@ -102,17 +102,17 @@ const createIEXECClient = ({
     return post('uploaddata', { uid, body: form });
   };
 
-  const createApp = (uid, name, extraFields = {}) => `<app><uid>${uid}</uid><name>${name}</name><type>DEPLOYABLE</type><accessrights>0x755</accessrights>${json2xml(extraFields)}</app>`;
-  const createData = (uid, type, cpu, os) => `<data><uid>${uid}</uid><accessrights>0x755</accessrights><type>${type}</type><name>fileName</name><cpu>${cpu}</cpu><os>${os}</os><status>UNAVAILABLE</status></data>`;
-  const createWork = (uid, appuid, sgid, extraFields = {}) => `<work><uid>${uid}</uid><accessrights>0x755</accessrights><appuid>${appuid}</appuid><sgid>${sgid}</sgid><status>UNAVAILABLE</status>${json2xml(extraFields)}</work>`;
+  const createApp = (uid, name, extraFields = {}) => `<app>${json2xml(extraFields)}<uid>${uid}</uid><name>${name}</name><type>DEPLOYABLE</type><accessrights>0x755</accessrights></app>`;
+  const createData = (uid, extraFields = {}) => `<data>${json2xml(extraFields)}<uid>${uid}</uid><accessrights>0x755</accessrights><name>fileName</name><status>UNAVAILABLE</status></data>`;
+  const createWork = (uid, appuid, sgid, extraFields = {}) => `<work>${json2xml(extraFields)}<uid>${uid}</uid><accessrights>0x755</accessrights><appuid>${appuid}</appuid><sgid>${sgid}</sgid><status>UNAVAILABLE</status></work>`;
 
-  const registerApp = async (data, type, cpu, os, size, name) => {
+  const registerApp = async (data, { size, name, params = {} }) => {
     const dataUID = uuidV4();
     debug('dataUID', dataUID);
-    await sendData(createData(dataUID, type, cpu, os));
+    await sendData(createData(dataUID, params));
     await uploadData(dataUID, data, size);
     const fields = {};
-    fields[getAppBinaryFieldName(os, cpu)] = utils.uid2uri(dataUID);
+    fields[getAppBinaryFieldName(params.os, params.cpu)] = utils.uid2uri(dataUID);
     const appUID = uuidV4();
     debug('appUID', appUID);
     await sendApp(createApp(appUID, name, fields));
