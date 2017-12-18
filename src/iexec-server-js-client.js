@@ -18,13 +18,11 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const createIEXECClient = ({
   login = '',
   password = '',
-  hostname = '',
-  port = '',
+  server = '',
   jwt = '',
   mandated = '',
 }) => {
   const BASICAUTH_CREDENTIALS = Buffer.from(login.concat(':', password)).toString('base64');
-  const BASE_URL = 'https://'.concat(hostname, ':', port, '/');
   const STATE_AUTH = {};
   let mandatedLogin = mandated;
   const APPS = {};
@@ -45,7 +43,7 @@ const createIEXECClient = ({
       const MANDATED = mandatedLogin !== '' ? { XWMANDATINGLOGIN: mandatedLogin } : {};
       const allParams = Object.assign({}, params, STATE_AUTH, MANDATED);
       const queryString = Object.keys(allParams).length !== 0 ? '?'.concat(qs.stringify(allParams)) : '';
-      const uri = BASE_URL.concat(endpoint, uid ? '/' : '', uid, queryString);
+      const uri = server.concat('/', endpoint, uid ? '/' : '', uid, queryString);
       const headers = { Authorization: 'Basic '.concat(BASICAUTH_CREDENTIALS) };
 
       debug(method, uri);
@@ -66,7 +64,7 @@ const createIEXECClient = ({
   const getCookieByJWT = async (jwtoken) => {
     try {
       const jar = request.jar();
-      const url = 'https://'.concat(hostname, ':', port, '/ethauth/');
+      const url = server.concat('/ethauth/');
       const jarCookie = request.cookie(`ethauthtoken=${jwtoken}`);
       jar.setCookie(jarCookie, url);
       await request({ url, jar });

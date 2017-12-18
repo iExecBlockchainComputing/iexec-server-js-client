@@ -7,8 +7,7 @@ console.log = () => {};
 const iexec = createIEXECClient({
   login: '',
   password: '',
-  hostname: '',
-  port: '',
+  server: '',
 });
 
 test('registerApp() & submitWorkByAppName()', async () => {
