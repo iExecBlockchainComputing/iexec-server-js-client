@@ -61,6 +61,13 @@ const getAppBinaryFieldName = (_os, _cpu) => {
   return undefined;
 };
 
+const getFieldValue = (obj, field) => {
+  const [objName] = Object.keys(obj.xwhep);
+  const fields = Object.keys(obj.xwhep[objName][0]);
+  if (!(fields.includes(field))) throw Error(`getFieldValue() no ${field} in ${objName}`);
+  return obj.xwhep[objName][0][field][0];
+};
+
 const FETCH_INTERVAL = 5000;
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
@@ -68,7 +75,9 @@ const waitFor = async (fn, uid, counter = 0) => {
   try {
     const work = await fn(uid);
     debug('waitFor()', counter, uid, 'status', work.xwhep.work[0].status[0]);
-    if (work.xwhep.work[0].status[0] === 'COMPLETED') return work;
+    const status = getFieldValue(work, 'status');
+    if (status === 'COMPLETED') return work;
+    if (status === 'ERROR') throw Error('Work status = ERROR');
     await sleep(FETCH_INTERVAL);
     return waitFor(fn, uid, counter + 1);
   } catch (error) {
@@ -77,20 +86,8 @@ const waitFor = async (fn, uid, counter = 0) => {
   }
 };
 
-const uri2uid = uri => uri.split('xw://xwserver/')[1];
-const uid2uri = uid => `xw://xwserver/${uid}`;
-
-const getFieldValue = (obj, field) => {
-  const [objName] = Object.keys(obj.xwhep);
-  const fields = Object.keys(obj.xwhep[objName][0]);
-  if (!(fields.includes(field))) throw Error(`getFieldValue() no ${field} in ${objName}`);
-  return obj.xwhep[objName][0][field][0];
-};
-
 module.exports = {
   getAppBinaryFieldName,
   waitFor,
-  uri2uid,
-  uid2uri,
   getFieldValue,
 };
