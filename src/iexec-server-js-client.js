@@ -26,6 +26,9 @@ const createIEXECClient = ({
   const STATE_AUTH = {};
   let mandatedLogin = mandated;
   const APPS = {};
+  const hostname = server.split('://')[1].split(':')[0];
+  const uri2uid = uri => uri.split(`xw://${hostname}/`)[1];
+  const uid2uri = uid => `xw://${hostname}/${uid}`;
 
   const xmlFormat = async (res) => {
     const xmlResponse = await res.text();
@@ -115,7 +118,7 @@ const createIEXECClient = ({
     await sendData(createXMLData(Object.assign(dataParams, { uid: dataUID })));
     await uploadData(dataUID, data, size);
     const fields = {};
-    fields[getAppBinaryFieldName(dataParams.os, dataParams.cpu)] = utils.uid2uri(dataUID);
+    fields[getAppBinaryFieldName(dataParams.os, dataParams.cpu)] = uid2uri(dataUID);
     const appUID = uuidV4();
     debug('appUID', appUID);
     await sendApp(createXMLApp(Object.assign(fields, { uid: appUID }, appParams)));
@@ -217,6 +220,8 @@ const createIEXECClient = ({
     submitWork,
     submitWorkByAppName,
     waitForWorkCompleted,
+    uri2uid,
+    uid2uri,
   }, utils);
 };
 module.exports = createIEXECClient;

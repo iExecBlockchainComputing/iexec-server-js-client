@@ -48,7 +48,5 @@ test('getFieldValue(appXML)', async () => {
   expect(iexec.getFieldValue(app, 'linux_amd64uri')).toBe('xw://xw.iex.ec/47a7a8f2-fa50-4f20-a0cf-ea6ff778c7c4');
 });
 
-const uri = 'xw://xwserver/47a7a8f2-fa50-4f20-a0cf-ea6ff778c7c4';
 const uid = '47a7a8f2-fa50-4f20-a0cf-ea6ff778c7c4';
-test('uri2uid()', () => expect(iexec.uri2uid(uri)).toBe(uid));
-test('uir2uid()', () => expect(iexec.uid2uri(uid)).toBe(uri));
+test('uri2uid()', () => expect(iexec.uri2uid(iexec.uid2uri(uid))).toBe(uid));
