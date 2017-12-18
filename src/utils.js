@@ -80,9 +80,17 @@ const waitFor = async (fn, uid, counter = 0) => {
 const uri2uid = uri => uri.split('xw://xwserver/')[1];
 const uid2uri = uid => `xw://xwserver/${uid}`;
 
+const getFieldValue = (obj, field) => {
+  const [objName] = Object.keys(obj.xwhep);
+  const fields = Object.keys(obj.xwhep[objName][0]);
+  if (!(fields.includes(field))) throw Error(`getFieldValue() no ${field} in ${objName}`);
+  return obj.xwhep[objName][0][field][0];
+};
+
 module.exports = {
   getAppBinaryFieldName,
   waitFor,
   uri2uid,
   uid2uri,
+  getFieldValue,
 };

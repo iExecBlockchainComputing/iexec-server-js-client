@@ -9,7 +9,8 @@ const hash = require('hash.js');
 const request = require('request-promise');
 const devnull = require('dev-null');
 const through2 = require('through2');
-const { getAppBinaryFieldName, waitFor, uid2uri } = require('./utils');
+const utils = require('./utils');
+const { getAppBinaryFieldName, waitFor } = require('./utils');
 
 const debug = Debug('iexec-server-js-client');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -113,7 +114,7 @@ const createIEXECClient = ({
     await sendData(createData(dataUID, type, cpu, os));
     await uploadData(dataUID, data, size);
     const fields = {};
-    fields[getAppBinaryFieldName(os, cpu)] = uid2uri(dataUID);
+    fields[getAppBinaryFieldName(os, cpu)] = utils.uid2uri(dataUID);
     const appUID = uuidV4();
     debug('appUID', appUID);
     await sendApp(createApp(appUID, name, fields));
@@ -192,7 +193,7 @@ const createIEXECClient = ({
     await updateAppsCache();
   };
 
-  return {
+  return Object.assign({
     init,
     get,
     post,
@@ -216,6 +217,6 @@ const createIEXECClient = ({
     submitWork,
     submitWorkByAppName,
     waitForWorkCompleted,
-  };
+  }, utils);
 };
 module.exports = createIEXECClient;
