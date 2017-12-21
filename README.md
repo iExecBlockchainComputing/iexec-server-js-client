@@ -14,8 +14,7 @@ const createIEXECClient = require('iexec-server-js-client')
 const iexec = createIEXECClient({
   login: '',
   password: '',
-  hostname: 'localhost',
-  port: '9443',
+  server: 'http://localhost:9443',
 })
 
 iexec.getApps().then(console.log) // print apps from server
