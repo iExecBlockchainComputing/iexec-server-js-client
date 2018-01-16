@@ -2,7 +2,6 @@ const fs = require('fs');
 const xml2js = require('xml2js-es6-promise');
 const createIEXECClient = require('../src/iexec-server-js-client');
 
-console.log = () => {};
 const {
   XW_LOGIN, XW_PWD, XW_SERVER, JWTOKEN,
 } = process.env;
@@ -27,10 +26,7 @@ test('registerApp() & submitWorkByAppName()', async () => {
   expect(workUID).toBeTruthy();
 }, 15000);
 
-test('getCookieByJWT()', async () => {
-  expect.assertions(1);
-  return expect(iexec.getCookieByJWT(jwtoken)).resolves.toBeTruthy();
-});
+test('getCookieByJWT()', async () => expect(iexec.getCookieByJWT(jwtoken)).resolves.toBeTruthy());
 
 const dataXML = '<xwhep><data><uid>9d2e2ae0-be3b-4bb0-ad45-e7e4aeb0bc4e</uid><owneruid>a98c4179-c756-4678-839d-eeae6ca36f6f</owneruid><accessrights>0x755</accessrights><name>fileName</name><links>0</links><insertiondate>2017-12-18 10:01:06</insertiondate><status>ERROR</status><type>BINARY</type><cpu>AMD64</cpu><os>LINUX</os><uri>xw://xw.iex.ec/9d2e2ae0-be3b-4bb0-ad45-e7e4aeb0bc4e</uri><sendtoclient>false</sendtoclient><replicated>false</replicated></data></xwhep>';
 test('getFieldValue(dataXML)', async () => {
