@@ -112,16 +112,18 @@ const createIEXECClient = ({
   const createXMLData = data => `<data>${json2xml(Object.assign(defaultData, data))}</data>`;
   const createXMLWork = work => `<work>${json2xml(Object.assign(defaultWork, work))}</work>`;
 
-  const registerApp = async (data, size, dataParams = {}, appParams = {}) => {
+  const registerData = async (data, size, dataParams = {}) => {
     const dataUID = uuidV4();
     debug('dataUID', dataUID);
     await sendData(createXMLData(Object.assign(dataParams, { uid: dataUID })));
     await uploadData(dataUID, data, size);
-    const fields = {};
-    fields[getAppBinaryFieldName(dataParams.os, dataParams.cpu)] = uid2uri(dataUID);
+    return dataUID;
+  };
+
+  const registerApp = async (appParams = {}) => {
     const appUID = uuidV4();
     debug('appUID', appUID);
-    await sendApp(createXMLApp(Object.assign(fields, { uid: appUID }, appParams)));
+    await sendApp(createXMLApp(Object.assign({ uid: appUID }, appParams)));
     return appUID;
   };
 
@@ -216,12 +218,14 @@ const createIEXECClient = ({
     download,
     downloadStream,
     uploadData,
+    registerData,
     registerApp,
     submitWork,
     submitWorkByAppName,
     waitForWorkCompleted,
     uri2uid,
     uid2uri,
+    getAppBinaryFieldName,
   }, utils);
 };
 module.exports = createIEXECClient;
