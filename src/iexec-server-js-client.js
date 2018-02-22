@@ -1,4 +1,5 @@
 const Debug = require('debug');
+require('babel-polyfill');
 const FormData = require('form-data');
 const uuidV4 = require('uuid/v4');
 const xml2js = require('xml2js-es6-promise');
