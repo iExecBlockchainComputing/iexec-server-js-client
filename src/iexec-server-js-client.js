@@ -41,7 +41,7 @@ const createIEXECClient = ({
   const streamFormat = res => res;
 
   const http = method => async (endpoint, {
-    uid = '', params = {}, body = {}, format = xmlFormat,
+    uid = '', params = {}, body = undefined, format = xmlFormat,
   } = {}) => {
     try {
       const MANDATED = mandatedLogin !== '' ? { XWMANDATINGLOGIN: mandatedLogin } : {};
