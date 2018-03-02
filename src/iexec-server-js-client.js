@@ -1,13 +1,11 @@
 const Debug = require('debug');
-require('babel-polyfill');
 const FormData = require('form-data');
 const uuidV4 = require('uuid/v4');
 const xml2js = require('xml2js-es6-promise');
 const json2xml = require('json2xml');
-const fetch = require('node-fetch');
+const fetch = require('cross-fetch');
 const qs = require('qs');
 const hash = require('hash.js');
-const request = require('request-promise');
 const devnull = require('dev-null');
 const through2 = require('through2');
 const utils = require('./utils');
@@ -23,7 +21,8 @@ const createIEXECClient = ({
   jwt = '',
   mandated = '',
 }) => {
-  const BASICAUTH_CREDENTIALS = Buffer.from(login.concat(':', password)).toString('base64');
+  const BASICAUTH_CREDENTIALS = login ? Buffer.from(login.concat(':', password)).toString('base64') : undefined;
+  debug('BASICAUTH_CREDENTIALS', BASICAUTH_CREDENTIALS);
   const STATE_AUTH = {};
   let mandatedLogin = mandated;
   const APPS = {};
@@ -48,7 +47,7 @@ const createIEXECClient = ({
       const allParams = Object.assign({}, params, STATE_AUTH, MANDATED);
       const queryString = Object.keys(allParams).length !== 0 ? '?'.concat(qs.stringify(allParams)) : '';
       const uri = server.concat('/', endpoint, uid ? '/' : '', uid, queryString);
-      const headers = { Authorization: 'Basic '.concat(BASICAUTH_CREDENTIALS) };
+      const headers = BASICAUTH_CREDENTIALS ? { Authorization: 'Basic '.concat(BASICAUTH_CREDENTIALS) } : {};
 
       debug(method, uri);
       const res = await fetch(uri, {
@@ -67,17 +66,10 @@ const createIEXECClient = ({
 
   const getCookieByJWT = async (jwtoken) => {
     try {
-      const jar = request.jar();
-      const url = server.concat('/ethauth/');
-      const jarCookie = request.cookie(`ethauthtoken=${jwtoken}`);
-      jar.setCookie(jarCookie, url);
-      await request({ url, jar });
-      const cookie = jar.getCookies(url).find(e => e.key === 'state');
-      if (!cookie) throw Error('getCookieByJWT() jwt auth failed');
-
-      STATE_AUTH.state = cookie.value;
-      debug('cookie.value', cookie.value);
-      return cookie.value;
+      const cookie = await get('ethauth/', { params: { ethauthtoken: jwtoken, noredirect: 'true' }, format: streamFormat }).then(res => res.text());
+      debug('cookie', cookie);
+      STATE_AUTH.state = cookie;
+      return cookie;
     } catch (error) {
       debug('getCookieByJWT()', error);
       throw Error;
