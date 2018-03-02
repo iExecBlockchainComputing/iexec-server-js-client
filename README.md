@@ -1,4 +1,6 @@
-# iexec-server-js-client [![npm version](https://badge.fury.io/js/iexec-server-js-client.svg)](https://www.npmjs.com/package/iexec-server-js-client)
+# iexec-server-js-client
+[![Build Status](https://drone.iex.ec//api/badges/iExecBlockchainComputing/iexec-server-js-client/status.svg)](https://drone.iex.ec/iExecBlockchainComputing/iexec-server-js-client) [![npm version](https://badge.fury.io/js/iexec-server-js-client.svg)](https://www.npmjs.com/package/iexec-server-js-client) 
+
 JS client lib to interact with iExec REST API
 
 ## Ressources
