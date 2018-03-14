@@ -4,8 +4,6 @@ pipeline:
     commands:
       - npm install
       - npm run build
-    when:
-      branch: master
 
   npm:
     image: plugins/npm
