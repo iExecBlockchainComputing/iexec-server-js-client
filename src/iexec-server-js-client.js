@@ -201,6 +201,8 @@ const createIEXECClient = ({
   };
 
   return Object.assign({
+    server,
+    state: STATE_AUTH,
     init,
     get,
     post,
