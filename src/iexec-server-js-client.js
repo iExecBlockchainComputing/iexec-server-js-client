@@ -38,6 +38,13 @@ const createIEXECClient = ({
     return jsResponse;
   };
   const streamFormat = res => res;
+  const textFormat = res => res.text();
+
+  const resFormatPresets = {
+    xml: xmlFormat,
+    stream: streamFormat,
+    text: textFormat,
+  };
 
   const http = method => async (endpoint, {
     uid = '', params = {}, body = undefined, format = xmlFormat,
@@ -55,7 +62,8 @@ const createIEXECClient = ({
         body,
         headers,
       });
-      return format(res);
+      const formatFn = typeof format === 'string' ? resFormatPresets[format] : format;
+      return formatFn(res);
     } catch (error) {
       debug('http', error);
       throw error;
@@ -86,7 +94,7 @@ const createIEXECClient = ({
   const sendData = xmlData => get('senddata', { params: { XMLDESC: xmlData } });
   const sendApp = xmlApp => get('sendapp', { params: { XMLDESC: xmlApp } });
   const sendWork = xmlWork => get('sendwork', { params: { XMLDESC: xmlWork } });
-  const download = uid => get('downloaddata', { uid });
+  const download = (uid, options) => get('downloaddata', Object.assign({ uid }, options));
   const uploadData = (uid, data, size) => {
     const form = new FormData();
     form.append('DATAUID', uid);
