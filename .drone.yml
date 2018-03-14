@@ -5,7 +5,6 @@ pipeline:
       - npm install
       - npm run build
     when:
-      event: tag
       branch: master
 
   npm:
@@ -15,4 +14,3 @@ pipeline:
     email: sulliwane@gmail.com
     when:
       event: tag
-      branch: master
