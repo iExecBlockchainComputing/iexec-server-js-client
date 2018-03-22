@@ -88,6 +88,7 @@ const createIEXECClient = ({
 
   const getUID = uid => get('get', { uid });
   const removeUID = uid => get('remove', { uid });
+  const getAppByName = uid => get('getappbyname', { uid });
   const getAppsUIDs = () => get('getapps').then(uids => uids.xwhep.XMLVector[0].XMLVALUE.map(e => e.$.value));
   const getAppsByUIDs = appsUIDs => Promise.all(appsUIDs.map(uid => getUID(uid)));
   const getWorkByExternalID = uid => get('getworkbyexternalid', { uid });
@@ -210,6 +211,7 @@ const createIEXECClient = ({
     setMandated,
     getUID,
     removeUID,
+    getAppByName,
     getAppsUIDs,
     getAppsByUIDs,
     appsToCache,
