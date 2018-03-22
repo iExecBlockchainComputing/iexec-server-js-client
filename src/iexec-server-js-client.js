@@ -159,9 +159,8 @@ const createIEXECClient = ({
   };
 
   const submitWorkByAppName = async (appName, params = {}) => {
-    if (!(appName in APPS)) await updateAppsCache();
-    if (!(appName in APPS)) throw Error(`No match for App name ${appName}`);
-    const appUID = APPS[appName];
+    const app = await getAppByName(appName);
+    const appUID = utils.getFieldValue(app, 'uid');
     debug('appUID', appUID, 'from name', appName);
     return submitWork(appUID, params);
   };
