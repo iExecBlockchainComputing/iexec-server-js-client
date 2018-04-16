@@ -3,7 +3,7 @@ const Debug = require('debug');
 const debug = Debug('iexec-server-js-client:utils');
 
 const getAppBinaryFieldName = (_os, _cpu) => {
-  if ((_os === undefined) || (_cpu === undefined)) {
+  if (_os === undefined || _cpu === undefined) {
     throw new Error('OS or CPU undefined');
   }
 
@@ -64,7 +64,7 @@ const getAppBinaryFieldName = (_os, _cpu) => {
 const getFieldValue = (obj, field) => {
   const [objName] = Object.keys(obj.xwhep);
   const fields = Object.keys(obj.xwhep[objName][0]);
-  if (!(fields.includes(field))) throw Error(`getFieldValue() no ${field} in ${objName}`);
+  if (!fields.includes(field)) throw Error(`getFieldValue() no ${field} in ${objName}`);
   return obj.xwhep[objName][0][field][0];
 };
 
@@ -86,8 +86,22 @@ const waitFor = async (fn, uid, counter = 0) => {
   }
 };
 
+const waitForWorkResult = async (fn, txHash, counter = 0) => {
+  const workResult = await fn(txHash);
+
+  debug('counter', counter);
+  debug('workResult', workResult);
+  const status = workResult.status.toNumber();
+  if (status === 4) return workResult.uri;
+  if (status === 5) throw Error('Bridge computation failed');
+
+  await sleep(FETCH_INTERVAL);
+  return waitForWorkResult(fn, txHash, counter + 1);
+};
+
 module.exports = {
   getAppBinaryFieldName,
-  waitFor,
   getFieldValue,
+  waitFor,
+  waitForWorkResult,
 };
