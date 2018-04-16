@@ -40,7 +40,7 @@ iexec.auth(ethProvider, accountAddress).then(({ jwtoken, cookie }) => {
 });
 ```
 
-If you already have your JWT token, no need to do full auth:
+If you already have your JWT token, no need to do full auth (avoid wallet signing):
 
 ```js
 iexec.getCookieByJWT('my_jwt_token').then(cookie => {
