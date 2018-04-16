@@ -31,7 +31,7 @@ const iexec = createIEXECClient({ server: 'https://testxw.iex.ec:443' });
 Authenticate before hitting iExec API:
 
 ```js
-iexec.auth(ethProvider, accountAddress).then(({ jwtoken, cookie }) => {
+iexec.auth(web3.currentProvider, accountAddress).then(({ jwtoken, cookie }) => {
   console.log(jwtoken); // this is given by auth.iex.ec server
   console.log(cookie); // this is given by iExec server
   // hit iExec server API
