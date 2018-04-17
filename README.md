@@ -51,7 +51,7 @@ iexec.getCookieByJWT('my_jwt_token').then(cookie => {
 
 ### Submit a work
 
-Call the dapp smart contract "iexecSubmit" method to submit a work:
+Call the dapp smart contract "iexecSubmit" method to submit a work (for reference only, not part of this repo library):
 
 ```js
 const oracleJSON = require('iexec-oracle-contract/build/contracts/IexecOracle.json');
