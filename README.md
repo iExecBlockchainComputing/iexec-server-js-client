@@ -55,16 +55,18 @@ Call the dapp smart contract "iexecSubmit" method to submit a work (for referenc
 
 ```js
 const oracleJSON = require('iexec-oracle-contract/build/contracts/IexecOracle.json');
+const work = '{"cmdline":"10"}'
 
-const oracleContract = ethProvider
-  .contract(oracleJSON.abi, oracleJSON.unlinked_binary, { from: account })
+const oracleContract = web3.eth
+  .contract(oracleJSON.abi)
   .at(oracleJSON.networks[chainID].address);
-const callbackPrice = await  oracleContract.callbackPrice();
+const callbackPrice = await oracleContract.callbackPrice();
 
-const dappContract = ethProvider
-  .contract(dappSubmitABI, '', { from: account })
+const dappContract = web3.eth
+  .contract(dappSubmitABI)
   .at(dappAddress);
 
+// this is the work submit
 const txHash = await dappContract.iexecSubmit(work, {
   value: callbackPrice[0].toNumber(),
 });
