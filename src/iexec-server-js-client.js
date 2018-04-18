@@ -128,7 +128,7 @@ const createIEXECClient = ({
       .update(data)
       .digest('hex');
     debug('sha256', sha256);
-    form.append('DATAMD5SUM', sha256);
+    form.append('DATASHASUM', sha256);
     form.append('DATASIZE', size);
     form.append('DATAFILE', data);
     return post('uploaddata', { uid, body: form });
