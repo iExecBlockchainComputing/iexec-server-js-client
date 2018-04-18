@@ -90,7 +90,7 @@ const createIEXECClient = ({
       }).then(res => res.text());
       debug('authCookie', authCookie);
       STATE_AUTH.state = authCookie;
-      return cookie;
+      return authCookie;
     } catch (error) {
       debug('getCookieByJWT()', error);
       throw Error;
@@ -245,19 +245,27 @@ const createIEXECClient = ({
           from: address,
         },
         async (err, signature) => {
-          if (err) return reject(err);
-          debug('signature', signature);
+          try {
+            debug('err', err);
+            debug('signature.error', signature.error);
+            if (signature.error) return reject(Error('Signature error'));
+            if (err) return reject(Error('Signature error'));
 
-          const { jwtoken } = await fetch(`${AUTH_URL}/typedauth?message=${msgJSON}&address=${address}&signature=${
-            signature.result
-          }`).then(res => res.json());
-          debug('jwtoken', jwtoken);
-          const authCookie = await getCookieByJWT(jwtoken);
-          debug('authCookie', authCookie);
-          const version = get('version');
-          debug('version', version);
+            debug('signature', signature);
+            const { jwtoken } = await fetch(`${AUTH_URL}/typedauth?message=${msgJSON}&address=${address}&signature=${
+              signature.result
+            }`).then(res => res.json());
+            debug('jwtoken', jwtoken);
+            const authCookie = await getCookieByJWT(jwtoken);
+            debug('authCookie', authCookie);
+            const version = get('version');
+            debug('version', version);
 
-          return resolve({ cookie: authCookie, jwtoken });
+            return resolve({ cookie: authCookie, jwtoken });
+          } catch (error) {
+            debug('auth()', error);
+            return reject(Error('Auth server error'));
+          }
         },
       );
     });
