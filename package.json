@@ -40,7 +40,9 @@
     "xml2js-es6-promise": "^1.1.1"
   },
   "babel": {
-    "plugins": ["transform-runtime"],
+    "plugins": [
+      "transform-runtime"
+    ],
     "presets": [
       [
         "env",
