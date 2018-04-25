@@ -14,7 +14,7 @@ JS client lib to interact with iExec server REST API
 
 Below are examples showcasing the use of the library in the most common worklow:
 
-### Create iExec client
+### 1. Create iExec client
 
 iExec server URL:
 
@@ -26,7 +26,7 @@ const createIEXECClient = require('iexec-server-js-client');
 const iexec = createIEXECClient({ server: 'https://testxw.iex.ec:443' });
 ```
 
-### Auth
+### 2. Auth
 
 Authenticate before hitting iExec API:
 
@@ -49,7 +49,7 @@ iexec.getCookieByJWT('my_jwt_token').then(cookie => {
 });
 ```
 
-### Submit a work
+### 3. Submit a work
 
 Call the dapp smart contract "iexecSubmit" method to submit a work (for reference only, not part of this repo library):
 
@@ -72,7 +72,7 @@ const txHash = await dappContract.iexecSubmit(work, {
 });
 ```
 
-### Wait for work result
+### 4. Wait for work result
 
 After submitting a work through Ethereum, use the transaction hash (txHash) to wait for the work result:
 
