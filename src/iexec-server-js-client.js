@@ -13,7 +13,6 @@ const { getAppBinaryFieldName, waitFor } = require('./utils');
 
 const debug = Debug('iexec-server-js-client');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-const AUTH_URL = 'https://auth.iex.ec';
 
 const createIEXECClient = ({
   login = '',
@@ -22,11 +21,12 @@ const createIEXECClient = ({
   jwt = '',
   mandated = '',
   cookie = '',
+  authURL = 'https://auth.iex.ec',
 }) => {
   const BASICAUTH_CREDENTIALS = login
     ? Buffer.from(login.concat(':', password)).toString('base64')
     : undefined;
-  debug('BASICAUTH_CREDENTIALS', BASICAUTH_CREDENTIALS);
+  // debug('BASICAUTH_CREDENTIALS', BASICAUTH_CREDENTIALS);
   const STATE_AUTH = cookie ? { state: cookie } : {};
   let mandatedLogin = mandated;
   const APPS = {};
@@ -231,45 +231,9 @@ const createIEXECClient = ({
     await updateAppsCache();
   };
 
-  const auth = async (ethProvider, address) => {
-    const { message } = await fetch(`${AUTH_URL}/typedmessage`).then(res => res.json());
-    debug('message', message);
-    const msgJSON = JSON.stringify(message);
-
-    // MetaMask signing
-    return new Promise((resolve, reject) => {
-      ethProvider.sendAsync(
-        {
-          method: 'eth_signTypedData',
-          params: [message, address],
-          from: address,
-        },
-        async (err, signature) => {
-          try {
-            debug('err', err);
-            debug('signature.error', signature.error);
-            if (signature.error) return reject(Error('Signature error'));
-            if (err) return reject(Error('Signature error'));
-
-            debug('signature', signature);
-            const { jwtoken } = await fetch(`${AUTH_URL}/typedauth?message=${msgJSON}&address=${address}&signature=${
-              signature.result
-            }`).then(res => res.json());
-            debug('jwtoken', jwtoken);
-            const authCookie = await getCookieByJWT(jwtoken);
-            debug('authCookie', authCookie);
-            const version = get('version');
-            debug('version', version);
-
-            return resolve({ cookie: authCookie, jwtoken });
-          } catch (error) {
-            debug('auth()', error);
-            return reject(Error('Auth server error'));
-          }
-        },
-      );
-    });
-  };
+  const getTypedMessage = () => fetch(`${authURL}/typedmessage`).then(res => res.json());
+  const getJWTBySignature = (msgJSON, address, signResult, { type = 'typedauth' } = {}) =>
+    fetch(`${authURL}/${type}?message=${msgJSON}&address=${address}&signature=${signResult}`).then(res => res.json());
 
   return Object.assign(
     {
@@ -279,7 +243,6 @@ const createIEXECClient = ({
       get,
       post,
       getCookieByJWT,
-      auth,
       setMandated,
       getByUID,
       getUID,
@@ -306,6 +269,8 @@ const createIEXECClient = ({
       uri2uid,
       uid2uri,
       getAppBinaryFieldName,
+      getTypedMessage,
+      getJWTBySignature,
     },
     utils,
   );
