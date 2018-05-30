@@ -1,11 +1,9 @@
 const Debug = require('debug');
-const FormData = require('form-data');
 const uuidV4 = require('uuid/v4');
 const xml2js = require('xml2js-es6-promise');
 const json2xml = require('jsontoxml');
 const fetch = require('cross-fetch');
 const qs = require('qs');
-const hash = require('hash.js');
 const devnull = require('dev-null');
 const through2 = require('through2');
 const utils = require('./utils');
@@ -120,36 +118,14 @@ const createIEXECClient = ({
   const sendApp = xmlApp => get('sendapp', { params: { XMLDESC: xmlApp } });
   const sendWork = xmlWork => get('sendwork', { params: { XMLDESC: xmlWork } });
   const download = (uid, options) => get('downloaddata', Object.assign({ uid }, options));
-  const uploadData = (uid, data, size) => {
-    const form = new FormData();
-    form.append('DATAUID', uid);
-    const sha256 = hash
-      .sha256()
-      .update(data)
-      .digest('hex');
-    debug('sha256', sha256);
-    form.append('DATASHASUM', sha256);
-    form.append('DATASIZE', size);
-    form.append('DATAFILE', data);
-    return post('uploaddata', { uid, body: form });
-  };
+
   const createDownloadURI = workResultURI =>
     server.concat(`/downloaddata/${uri2uid(workResultURI)}?state=${STATE_AUTH.state}`);
 
   const defaultApp = { accessrights: '0x1700', type: 'DEPLOYABLE' };
-  const defaultData = { accessrights: '0x1700', name: 'fileName', status: 'UNAVAILABLE' };
   const defaultWork = { accessrights: '0x1700', status: 'UNAVAILABLE' };
   const createXMLApp = app => `<app>${json2xml(Object.assign(defaultApp, app))}</app>`;
-  const createXMLData = data => `<data>${json2xml(Object.assign(defaultData, data))}</data>`;
   const createXMLWork = work => `<work>${json2xml(Object.assign(defaultWork, work))}</work>`;
-
-  const registerData = async (data, size, dataParams = {}) => {
-    const dataUID = uuidV4();
-    debug('dataUID', dataUID);
-    await sendData(createXMLData(Object.assign(dataParams, { uid: dataUID })));
-    await uploadData(dataUID, data, size);
-    return dataUID;
-  };
 
   const registerApp = async (appParams = {}) => {
     const appUID = uuidV4();
@@ -259,9 +235,7 @@ const createIEXECClient = ({
       sendApp,
       download,
       downloadStream,
-      uploadData,
       createDownloadURI,
-      registerData,
       registerApp,
       submitWork,
       submitWorkByAppName,
