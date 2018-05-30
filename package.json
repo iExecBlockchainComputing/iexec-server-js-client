@@ -1,6 +1,6 @@
 {
   "name": "iexec-server-js-client",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "JS client to interact with iExec REST API",
   "main": "dist/iexec-server-js-client.js",
   "scripts": {
@@ -38,9 +38,7 @@
     "xml2js-es6-promise": "^1.1.1"
   },
   "babel": {
-    "plugins": [
-      "transform-runtime"
-    ],
+    "plugins": ["transform-runtime"],
     "presets": [
       [
         "env",
