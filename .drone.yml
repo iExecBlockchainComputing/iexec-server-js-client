@@ -1,6 +1,6 @@
 pipeline:
   build:
-    image: node:9.2.0
+    image: node:6.4.0
     commands:
       - npm install
       - npm run build
@@ -10,6 +10,5 @@ pipeline:
     secrets: [ npm_password ]
     username: sulliwane
     email: sulliwane@gmail.com
-    tag: next
     when:
       event: tag
