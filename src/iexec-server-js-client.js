@@ -22,7 +22,7 @@ const createIEXECClient = ({
   authURL = 'https://auth.iex.ec',
 }) => {
   if (!server) throw Error('missing server address, cannot be undefined');
-
+  debug('server', server);
   const BASICAUTH_CREDENTIALS = login
     ? Buffer.from(login.concat(':', password)).toString('base64')
     : undefined;
@@ -101,10 +101,6 @@ const createIEXECClient = ({
   }
 
   const getByUID = uid => get('get', { uid });
-  const getUID = (uid) => {
-    console.log('deprecated, use getByUID() instead');
-    return getByUID(uid);
-  };
   const removeByUID = uid => get('remove', { uid });
   const removeUID = (uid) => {
     console.log('deprecated, use removeByUID() instead');
@@ -112,7 +108,7 @@ const createIEXECClient = ({
   };
   const getAppByName = uid => get('getappbyname', { uid });
   const getAppsUIDs = () => get('getapps').then(uids => uids.xwhep.XMLVector[0].XMLVALUE.map(e => e.$.value));
-  const getAppsByUIDs = appsUIDs => Promise.all(appsUIDs.map(uid => getUID(uid)));
+  const getAppsByUIDs = appsUIDs => Promise.all(appsUIDs.map(uid => getByUID(uid)));
   const getWorkByExternalID = uid => get('getworkbyexternalid', { uid });
   const sendData = xmlData => get('senddata', { params: { XMLDESC: xmlData } });
   const sendApp = xmlApp => get('sendapp', { params: { XMLDESC: xmlApp } });
@@ -138,14 +134,14 @@ const createIEXECClient = ({
     debug('workUID', workUID);
     await sendWork(createXMLWork(Object.assign(params, { uid: workUID, appuid: appUID })));
     await sendWork(createXMLWork(Object.assign(params, { uid: workUID, appuid: appUID })));
-    const work = await getUID(workUID);
+    const work = await getByUID(workUID);
     debug('work.xwhep.work[0].status[0]', work.xwhep.work[0].status[0]);
     work.xwhep.work[0].status[0] = 'PENDING';
     await sendWork(json2xml(work));
     return workUID;
   };
 
-  const waitForWorkCompleted = async workUID => waitFor(getUID, workUID);
+  const waitForWorkCompleted = async workUID => waitFor(getByUID, workUID);
 
   const appsToCache = apps => apps.forEach((app) => {
     const appUID = app.xwhep.app[0].uid[0];
@@ -221,7 +217,6 @@ const createIEXECClient = ({
       getCookieByJWT,
       setMandated,
       getByUID,
-      getUID,
       removeByUID,
       removeUID,
       getAppByName,
