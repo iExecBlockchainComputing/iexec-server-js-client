@@ -59,8 +59,7 @@ const createIEXECClient = ({
     try {
       const MANDATED = mandatedLogin !== '' ? { XWMANDATINGLOGIN: mandatedLogin } : {};
       const allParams = Object.assign({}, params, STATE_AUTH, MANDATED);
-      const queryString =
-        Object.keys(allParams).length !== 0 ? '?'.concat(qs.stringify(allParams)) : '';
+      const queryString = Object.keys(allParams).length !== 0 ? '?'.concat(qs.stringify(allParams)) : '';
       const uri = server.concat('/', endpoint, uid ? '/' : '', uid, queryString);
       const headers = BASICAUTH_CREDENTIALS
         ? { Authorization: 'Basic '.concat(BASICAUTH_CREDENTIALS) }
@@ -112,8 +111,7 @@ const createIEXECClient = ({
     return removeByUID(uid);
   };
   const getAppByName = uid => get('getappbyname', { uid });
-  const getAppsUIDs = () =>
-    get('getapps').then(uids => uids.xwhep.XMLVector[0].XMLVALUE.map(e => e.$.value));
+  const getAppsUIDs = () => get('getapps').then(uids => uids.xwhep.XMLVector[0].XMLVALUE.map(e => e.$.value));
   const getAppsByUIDs = appsUIDs => Promise.all(appsUIDs.map(uid => getUID(uid)));
   const getWorkByExternalID = uid => get('getworkbyexternalid', { uid });
   const sendData = xmlData => get('senddata', { params: { XMLDESC: xmlData } });
@@ -121,8 +119,7 @@ const createIEXECClient = ({
   const sendWork = xmlWork => get('sendwork', { params: { XMLDESC: xmlWork } });
   const download = (uid, options) => get('downloaddata', Object.assign({ uid }, options));
 
-  const createDownloadURI = workResultURI =>
-    server.concat(`/downloaddata/${uri2uid(workResultURI)}?state=${STATE_AUTH.state}`);
+  const createDownloadURI = workResultURI => server.concat(`/downloaddata/${uri2uid(workResultURI)}?state=${STATE_AUTH.state}`);
 
   const defaultApp = { accessrights: '0x1700', type: 'DEPLOYABLE' };
   const defaultWork = { accessrights: '0x1700', status: 'UNAVAILABLE' };
@@ -150,11 +147,10 @@ const createIEXECClient = ({
 
   const waitForWorkCompleted = async workUID => waitFor(getUID, workUID);
 
-  const appsToCache = apps =>
-    apps.forEach((app) => {
-      const appUID = app.xwhep.app[0].uid[0];
-      APPS[app.xwhep.app[0].name[0]] = appUID;
-    });
+  const appsToCache = apps => apps.forEach((app) => {
+    const appUID = app.xwhep.app[0].uid[0];
+    APPS[app.xwhep.app[0].name[0]] = appUID;
+  });
 
   const updateAppsCache = async () => {
     const appsUIDs = await getAppsUIDs();
@@ -173,17 +169,17 @@ const createIEXECClient = ({
     return submitWork(appUID, params);
   };
 
-  const downloadStream = (uid, stream = '') =>
-    new Promise(async (resolve, reject) => {
-      const res = await get('downloaddata', { uid, format: streamFormat });
+  const downloadStream = (uid, stream = '') => new Promise(async (resolve, reject) => {
+    const res = await get('downloaddata', { uid, format: streamFormat });
 
-      let buff = Buffer.from('', 'utf8');
-      let full = false;
-      const bufferSize = 1 * 1024;
-      const outputStream = stream === '' ? devnull() : stream;
+    let buff = Buffer.from('', 'utf8');
+    let full = false;
+    const bufferSize = 1 * 1024;
+    const outputStream = stream === '' ? devnull() : stream;
 
-      res.body
-        .pipe(through2((chunk, enc, cb) => {
+    res.body
+      .pipe(
+        through2((chunk, enc, cb) => {
           if (!full) {
             buff = Buffer.concat([buff, chunk]);
             if (buff.length >= bufferSize) {
@@ -192,17 +188,18 @@ const createIEXECClient = ({
             }
           }
           cb(null, chunk);
-        }))
-        .on('error', reject)
-        .pipe(outputStream)
-        .on('error', reject)
-        .on('finish', () => {
-          debug('finish event');
-          debug('buff.length', buff.length);
-          debug('buff.slice(0, bufferSize).length', buff.slice(0, bufferSize).length);
-          resolve({ stdout: buff.slice(0, bufferSize).toString() });
-        });
-    });
+        }),
+      )
+      .on('error', reject)
+      .pipe(outputStream)
+      .on('error', reject)
+      .on('finish', () => {
+        debug('finish event');
+        debug('buff.length', buff.length);
+        debug('buff.slice(0, bufferSize).length', buff.slice(0, bufferSize).length);
+        resolve({ stdout: buff.slice(0, bufferSize).toString() });
+      });
+  });
 
   const init = async () => {
     if (jwt) await getCookieByJWT(jwt);
@@ -210,8 +207,9 @@ const createIEXECClient = ({
   };
 
   const getTypedMessage = () => fetch(`${authURL}/typedmessage`).then(res => res.json());
-  const getJWTBySignature = (msgJSON, address, signResult, { type = 'typedauth' } = {}) =>
-    fetch(`${authURL}/${type}?message=${msgJSON}&address=${address}&signature=${signResult}`).then(res => res.json());
+  const getJWTBySignature = (msgJSON, address, signResult, { type = 'typedauth' } = {}) => fetch(`${authURL}/${type}?message=${msgJSON}&address=${address}&signature=${signResult}`).then(
+    res => res.json(),
+  );
 
   return Object.assign(
     {
