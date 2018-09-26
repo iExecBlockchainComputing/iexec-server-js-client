@@ -15,16 +15,18 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const createIEXECClient = ({
   login = '',
   password = '',
-  server = '',
+  server,
   jwt = '',
   mandated = '',
   cookie = '',
   authURL = 'https://auth.iex.ec',
 }) => {
+  if (!server) throw Error('missing server address, cannot be undefined');
+
   const BASICAUTH_CREDENTIALS = login
     ? Buffer.from(login.concat(':', password)).toString('base64')
     : undefined;
-  // debug('BASICAUTH_CREDENTIALS', BASICAUTH_CREDENTIALS);
+
   const STATE_AUTH = cookie ? { state: cookie } : {};
   let mandatedLogin = mandated;
   const APPS = {};
